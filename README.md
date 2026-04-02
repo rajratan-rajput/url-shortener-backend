@@ -9,9 +9,13 @@
   <img src="https://img.shields.io/badge/API-REST-orange?style=for-the-badge" />
  
 </p>
+<p align="center">
+
 [![Docker](https://img.shields.io/badge/Docker-Enabled-blue)](https://www.docker.com/)
 [![Node.js](https://img.shields.io/badge/Node.js-Backend-green)](https://nodejs.org/)
 [![Redis](https://img.shields.io/badge/Redis-Caching-red)](https://redis.io/)
+
+</p>
 
 ---
 
