@@ -12,9 +12,9 @@
 </p>
 <p align="center">
 
-[![Docker](https://img.shields.io/badge/Docker-Enabled-blue)](https://www.docker.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-Backend-green)](https://nodejs.org/)
-[![Redis](https://img.shields.io/badge/Redis-Caching-red)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)](https://www.docker.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-Backend-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Redis](https://img.shields.io/badge/Redis-Caching-red?style=for-the-badge&logo=redis)](https://redis.io/)
 
 </p>
 
