@@ -7,7 +7,11 @@
   <img src="https://img.shields.io/badge/Redis-Caching-red?style=for-the-badge&logo=redis" />
   <img src="https://img.shields.io/badge/Docker-Container-blue?style=for-the-badge&logo=docker" />
   <img src="https://img.shields.io/badge/API-REST-orange?style=for-the-badge" />
+ 
 </p>
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue)](https://www.docker.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-Backend-green)](https://nodejs.org/)
+[![Redis](https://img.shields.io/badge/Redis-Caching-red)](https://redis.io/)
 
 ---
 
@@ -158,6 +162,17 @@ GET /:shortCode
 ```bash
 docker run -d -p 6379:6379 --name redis-server redis
 ```
+
+---
+
+## 🐳 Docker Setup
+
+```bash
+docker-compose up --build
+Services:
+Node.js Backend
+Redis (Caching)
+MongoDB Atlas (Cloud)
 
 ---
 
