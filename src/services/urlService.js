@@ -28,21 +28,24 @@ const createShortUrl = async (longUrl) => {
 
 const getLongUrl = async (shortCode) => {
   try {
-    // 1. Check Redis first (cache hit)
     const cachedUrl = await client.get(shortCode);
+
     if (cachedUrl) {
+      console.log("🔥 CACHE HIT");
       return cachedUrl;
     }
 
-    // 2. If not in cache → check MongoDB
+    console.log("💾 CACHE MISS");
+
     const urlDoc = await Url.findOne({ shortCode });
 
     if (!urlDoc) {
       return null;
     }
 
-    // 3. Store in Redis for future
     await client.set(shortCode, urlDoc.longUrl);
+
+    console.log("✅ Saved to Redis from MongoDB");
 
     return urlDoc.longUrl;
   } catch (error) {
