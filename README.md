@@ -213,7 +213,7 @@ npm run dev
 ## 👨‍💻 Author
 
 **Rajratan Rajput**
-GitHub: https://github.com/KhushbuChauhan-06
+GitHub: https://github.com/rajratan-rajput
 
 ---
 
