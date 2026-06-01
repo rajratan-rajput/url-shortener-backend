@@ -15,7 +15,7 @@ import publicRoutes from "./routes/publicRoutes.js";
 export function buildApp() {
   const app = express();
 
-  if (process.env.TRUST_PROXY === "1") {
+  if (process.env.TRUST_PROXY === "production") {
     app.set("trust proxy", 1);
   }
 
