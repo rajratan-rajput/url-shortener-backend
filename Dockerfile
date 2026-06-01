@@ -1,20 +1,30 @@
-# Use official Node image
-FROM node:18
+# syntax=docker/dockerfile:1
 
-# Create app directory
+FROM node:20-alpine AS deps
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Install dependencies
-RUN npm install
+FROM node:20-alpine AS runner
+WORKDIR /app
 
-# Copy entire project
-COPY . .
+ENV NODE_ENV=production
+ENV PORT=5000
 
-# Expose your app port (check your app.js, usually 5000 or 3000)
+RUN addgroup -g 1001 -S nodejs \
+  && adduser -S nodejs -u 1001 -G nodejs
+
+COPY --from=deps --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --chown=nodejs:nodejs package.json package-lock.json ./
+COPY --chown=nodejs:nodejs src ./src
+COPY --chown=nodejs:nodejs public ./public
+
+USER nodejs
+
 EXPOSE 5000
 
-# Start the server
-CMD ["node", "src/app.js"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:5000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "src/server.js"]

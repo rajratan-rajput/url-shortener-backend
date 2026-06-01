@@ -1,40 +1,101 @@
-import { createShortUrl, getLongUrl } from "../services/urlService.js";
+import {
+  createShortUrl,
+  getUserUrls,
+  deleteUserUrl,
+  getLongUrlAndIncrementClicks,
+} from "../services/urlService.js";
+import { validateHttpUrl } from "../utils/validateUrl.js";
+import { validateCustomAlias } from "../utils/validateCustomAlias.js";
+import { validateExpiryDate } from "../utils/validateExpiryDate.js";
 
-// POST /shorten
-const shortenUrl = async (req, res, next) => {
+export const createUrl = async (req, res, next) => {
   try {
-    const { longUrl } = req.body;
+    const { url, longUrl, customAlias, expiresAt, expiryDate } = req.body;
+    const rawUrl = url ?? longUrl;
+    const rawExpiry = expiresAt ?? expiryDate;
 
-    if (!longUrl) {
+    const validation = validateHttpUrl(rawUrl);
+    if (!validation.ok) {
       res.status(400);
-      throw new Error("Long URL is required");
+      throw new Error(validation.message);
     }
 
-    const url = await createShortUrl(longUrl);
+    let normalizedAlias = null;
+    if (customAlias !== undefined && customAlias !== null && customAlias !== "") {
+      const aliasValidation = validateCustomAlias(customAlias);
+      if (!aliasValidation.ok) {
+        res.status(400);
+        throw new Error(aliasValidation.message);
+      }
+      normalizedAlias = aliasValidation.normalizedAlias;
+    }
+
+    const expiryValidation = validateExpiryDate(rawExpiry);
+    if (!expiryValidation.ok) {
+      res.status(400);
+      throw new Error(expiryValidation.message);
+    }
+
+    const urlDoc = await createShortUrl(
+      req.user._id,
+      validation.normalizedUrl,
+      normalizedAlias,
+      expiryValidation.expiresAt
+    );
 
     res.status(201).json({
-      shortUrl: `${process.env.BASE_URL}/${url.shortCode}`,
+      id: urlDoc._id,
+      shortUrl: urlDoc.shortUrl,
+      shortCode: urlDoc.shortCode,
+      qrCode: urlDoc.qrCode,
+      longUrl: urlDoc.longUrl,
+      clicks: urlDoc.clicks,
+      expiresAt: urlDoc.expiresAt,
+      createdAt: urlDoc.createdAt,
     });
-  } catch (err) {
-    next(err); // 🔥 send to global handler
+  } catch (error) {
+    if (error.statusCode === 409) res.status(409);
+    next(error);
   }
 };
 
-// GET /:shortCode
-const redirectUrl = async (req, res) => {
+export const getMyUrls = async (req, res, next) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
+    const search = req.query.search || "";
+
+    const result = await getUserUrls(req.user._id, { page, limit, search });
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteUrl = async (req, res, next) => {
+  try {
+    await deleteUserUrl(req.user._id, req.params.id);
+    res.status(200).json({ message: "URL deleted successfully" });
+  } catch (error) {
+    if (error.statusCode === 404) res.status(404);
+    next(error);
+  }
+};
+
+export const redirectUrl = async (req, res, next) => {
   try {
     const { shortCode } = req.params;
+    const result = await getLongUrlAndIncrementClicks(shortCode, req);
 
-    const longUrl = await getLongUrl(shortCode);
-
-    if (!longUrl) {
+    if (result.expired) {
+      return res.status(410).json({ message: "URL has expired" });
+    }
+    if (result.notFound) {
       return res.status(404).json({ message: "URL not found" });
     }
 
-    res.redirect(longUrl);
+    res.redirect(result.longUrl);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
-
-export { shortenUrl, redirectUrl };
